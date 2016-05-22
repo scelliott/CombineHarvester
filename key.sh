@@ -9,6 +9,8 @@ if [ -z $1 ]; then
     exit;
 fi
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 # Pick Domain
 domain=$1
 echo "Harvesting for $domain"
@@ -51,7 +53,7 @@ sed "s/@$domain//" $tmpdir/all-emails > $tmpdir/emails.nodomain
 
 echo "[-] Enumerating Human Emails"
 # We do two passes to try and pull out shared addresses
-grep --fixed-strings --word-regexp --invert-match --file="dictionary" $tmpdir/emails.nodomain | grep --fixed-strings --invert-match --file="long-dictionary" | sed "s/$/@$domain/" > $tmpdir/human-emails
+grep --fixed-strings --word-regexp --invert-match --file="$DIR/dictionary" $tmpdir/emails.nodomain | grep --fixed-strings --invert-match --file="$DIR/long-dictionary" | sed "s/$/@$domain/" > $tmpdir/human-emails
 
 echo "[-] Enumerating Shared Mailboxes"
 # Separate out shared email addresses
@@ -98,13 +100,13 @@ echo -n "f_lastname " >> $tmpdir/naming-convention-counts
 { grep --count --perl-regexp '^[a-z]{1}\_[a-z]{2,}$' $tmpdir/human-emails.nodomain || true; } >> $tmpdir/naming-convention-counts
 
 echo -n "firstname " >> $tmpdir/naming-convention-counts
-{ grep --count --fixed-strings --line-regex --file="firstnames" $tmpdir/human-emails.nodomain || true; } >> $tmpdir/naming-convention-counts
+{ grep --count --fixed-strings --line-regex --file="$DIR/firstnames" $tmpdir/human-emails.nodomain || true; } >> $tmpdir/naming-convention-counts
 
 echo -n "flastname " >> $tmpdir/naming-convention-counts
-{ sed 's/^.//' $tmpdir/human-emails.nodomain | grep --count --fixed-strings --line-regex --file="lastnames" || true; } >> $tmpdir/naming-convention-counts
+{ sed 's/^.//' $tmpdir/human-emails.nodomain | grep --count --fixed-strings --line-regex --file="$DIR/lastnames" || true; } >> $tmpdir/naming-convention-counts
 
 echo -n "lastname " >> $tmpdir/naming-convention-counts 
-{ grep --count --fixed-strings --line-regex --file="lastnames" $tmpdir/human-emails.nodomain || true; } >> $tmpdir/naming-convention-counts
+{ grep --count --fixed-strings --line-regex --file="$DIR/lastnames" $tmpdir/human-emails.nodomain || true; } >> $tmpdir/naming-convention-counts
 
 # Pick the most likely naming convention
 namingconvention=$(cat $tmpdir/naming-convention-counts | sort -rnk2 | head -n1 | awk '{print $1}')
