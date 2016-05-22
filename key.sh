@@ -4,9 +4,34 @@
 # Dictionary
 # Names
 
-if [ -z $1 ]; then 
-    echo "Usage Message: key domain";
-    exit;
+if [ -z $1 ]; then
+cat << 'EOF'
+         ___                _     _                                            _            
+        / __\___  _ __ ___ | |__ (_)_ __   ___  /\  /\__ _ _ ____   _____  ___| |_ ___ _ __ 
+       / /  / _ \| '_ ` _ \| '_ \| | '_ \ / _ \/ /_/ / _` | '__\ \ / / _ \/ __| __/ _ \ '__|
+      / /__| (_) | | | | | | |_) | | | | |  __/ __  / (_| | |   \ V /  __/\__ \ ||  __/ |   
+      \____/\___/|_| |_| |_|_.__/|_|_| |_|\___\/ /_/ \__,_|_|    \_/ \___||___/\__\___|_|   
+                                                                                            
+Combine the results of TheHarvester
+[-] Multi Threaded
+[-] Parses out human/non-human email addresses
+[-] Builds CSV of found names & email addresses
+
+Usage: combineharvester domain
+
+
+Outputs:
+    human.domain.com.csv: CSV of names and email addresses of real people'
+    nothuman.domain.com.txt: TXT of shared/non identifying mailboxes'
+
+
+Based on the awesome work of Christian Martorella
+https://github.com/laramies/theHarvester
+
+EOF
+
+exit
+
 fi
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -33,8 +58,10 @@ harvesters=( google linkedin bing people123 jigsaw googleplus yahoo baidu pgp bi
 for harvester in "${harvesters[@]}"
 do
     harvester_name=$(echo "$harvester" | sed 's/.*/\L&/; s/[a-z]*/\u&/g')
-    { echo "[-] Harvesting from $harvester_name"; theharvester -d $domain -b $harvester > $tmpdir/harvested/$harvester; } &
+    { echo "[-] Starting harvesting from $harvester_name"; theharvester -d $domain -b $harvester > $tmpdir/harvested/$harvester; } &
 done
+
+echo "This is going to take a while... grab a cup of tea ^ . ^"
 
 # Progress bar goes here maybe?
 # Count the number of harvesters, divide screen width and build a bar.
