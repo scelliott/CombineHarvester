@@ -60,7 +60,8 @@ harvesters=( google linkedin bing people123 jigsaw googleplus yahoo baidu pgp bi
 for harvester in "${harvesters[@]}"
 do
     harvester_name=$(echo "$harvester" | sed 's/.*/\L&/; s/[a-z]*/\u&/g')
-    { echo "[-] Starting harvesting from $harvester_name"; theharvester -d $domain -b $harvester > $tmpdir/harvested/$harvester; } &
+    echo "[-] Starting harvesting from $harvester_name"
+    { theharvester -d $domain -b $harvester > $tmpdir/harvested/$harvester; } &
 done
 
 echo "This is going to take a while... grab a cup of tea ^ . ^"
@@ -186,7 +187,7 @@ esac
 
 # output
 
-tac $tmpdir/humans.csv | awk -F"," '!_[$3]++' | sed -r 's/(.*),(.*),(.*)/\u\1,\u\2,\3\u/' > humans.$domain.csv
+tac $tmpdir/humans.csv | awk -F"," '!_[$3]++' | sed -r 's/(.*),(.*),(.*)/\u\1,\u\2,\3\u/' | grep -v "no.hosts" | grep -v "no.emails" > humans.$domain.csv
 cat $tmpdir/shared-emails | sort | uniq > nothuman.$domain
 
 
