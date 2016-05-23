@@ -23,8 +23,8 @@ Usage: combineharvester domain
 
 
 Outputs:
-    human.domain.com.csv: CSV of names and email addresses of real people'
-    nothuman.domain.com.txt: TXT of shared/non identifying mailboxes'
+    human.domain.com.csv: CSV of names and email addresses of real people
+    nothuman.domain.com.txt: TXT of shared/non identifying mailboxes
 
 
 Based on the awesome work of Christian Martorella
