@@ -6,18 +6,18 @@
       / /__| (_) | | | | | | |_) | | | | |  __/ __  / (_| | |   \ V /  __/\__ \ ||  __/ |
       \____/\___/|_| |_| |_|_.__/|_|_| |_|\___\/ /_/ \__,_|_|    \_/ \___||___/\__\___|_|
 
-Combine the results of TheHarvester
+##### Combine the results of TheHarvester
 - Multi Threaded (Kinda)
 - Parses out human/non-human email addresses
 - Enumerates likely organisation naming convention
 - Turns names into email addresses
 - Builds CSV of found names & email addresses
 
-==Usage==
+##### Usage
 combineharvester domain
 
 
-==Outputs==
+##### Outputs
 - human.domain.com.csv: CSV of names and email addresses of real people
 - nothuman.domain.com.txt: TXT of shared/non identifying mailboxes
 
