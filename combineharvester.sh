@@ -3,6 +3,10 @@
 # Check if our files exist
 # Dictionary
 # Names
+red='\033[0;31m'
+green='\033[0;32m'
+white='\033[1;37m'
+blue='\033[0;34m'
 
 if [ -z $1 ]; then
 cat << 'EOF'
@@ -40,10 +44,11 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Pick Domain
 domain=$1
-echo "Harvesting for $domain"
+echo -e ${green} "[+]" ${white} "Harvesting for" ${red} "$domain"
 
 # Build Temp Area
-tmpdir=$(mktemp -d)
+mkdir $2
+tmpdir=$2
 #tmpdir="/tmp/tmp.74sl4boaCs"
 mkdir $tmpdir/harvested
 
@@ -60,11 +65,11 @@ harvesters=( google linkedin bing people123 jigsaw googleplus yahoo baidu pgp bi
 for harvester in "${harvesters[@]}"
 do
     harvester_name=$(echo "$harvester" | sed 's/.*/\L&/; s/[a-z]*/\u&/g')
-    echo "[-] Starting harvesting from $harvester_name"
+    echo -e ${green} "[+]" ${white}  "Starting harvesting from" ${red} $harvester_name
     { theharvester -d $domain -b $harvester > $tmpdir/harvested/$harvester; } &
 done
 
-echo "This is going to take a while... grab a cup of tea ^ . ^"
+echo -e ${blue} "[-]"  ${white} "This is going to take a while... grab a cup of tea ^ . ^"
 
 # Progress bar goes here maybe?
 # Count the number of harvesters, divide screen width and build a bar.
@@ -74,18 +79,18 @@ wait
 
 
 # Parse out emails
-echo "[-] Parsing Emails"
+echo -e ${green} "[+]" ${white} " Parsing Emails"
 grep --ignore-case --fixed-strings --no-filename @$domain $tmpdir/harvested/* | tr '[A-Z]' '[a-z]' | grep --invert-match '^@' |grep --invert-match '?'| sort | uniq > $tmpdir/all-emails
 
 
 # Try and determine human email addresses
 sed "s/@$domain//" $tmpdir/all-emails > $tmpdir/emails.nodomain
 
-echo "[-] Enumerating Human Emails"
+echo -e ${green} "[+]" ${white} " Enumerating Human Emails"
 # We do two passes to try and pull out shared addresses
 grep --fixed-strings --word-regexp --invert-match --file="$DIR/dictionary" $tmpdir/emails.nodomain | grep --fixed-strings --invert-match --file="$DIR/long-dictionary" | sed "s/$/@$domain/" > $tmpdir/human-emails
 
-echo "[-] Enumerating Shared Mailboxes"
+echo -e ${green} "[+]" ${white} " Enumerating Shared Mailboxes"
 # Separate out shared email addresses
 grep --fixed-strings --line-regexp --invert-match --file="$tmpdir/human-emails" $tmpdir/all-emails > $tmpdir/shared-emails
 
@@ -102,7 +107,7 @@ grep --fixed-strings --line-regexp --invert-match --file="$tmpdir/human-emails" 
 rm $tmpdir/all-emails
 rm $tmpdir/emails.nodomain
 
-echo "[-] Enumerating Naming Conventions"
+echo -e ${green} "[+]" ${white} " Enumerating Naming Conventions"
 # Process Human Emails
 sed "s/@$domain//" $tmpdir/human-emails > $tmpdir/human-emails.nodomain
 
@@ -140,9 +145,9 @@ echo -n "lastname " >> $tmpdir/naming-convention-counts
 
 # Pick the most likely naming convention
 namingconvention=$(cat $tmpdir/naming-convention-counts | sort -rnk2 | head -n1 | awk '{print $1}')
-echo "[-] Using \"$namingconvention\" naming convention"
+echo -e ${green} "[+]" ${white} " Using \"$namingconvention\" naming convention"
 
-echo "[-] Cleaning Up Names"
+echo -e ${green} "[+]" ${white} " Cleaning Up Names"
 # Now we parse the names:
 grep --perl-regexp --no-filename '^[A-Za-z][A-Za-z\ \- \.\,]+$' $tmpdir/harvested/* > $tmpdir/names
 
@@ -152,13 +157,13 @@ sed -r 's/^(Dr|Mr|Ms|Mrs|Lord|Mayor|Prof|Professor|Eng|phd)[\ \.\-\,]+//gi' | tr
 # Strip Dr. Lord Prefixes
 # Strip Suffixes
 
-echo "[-] Parsing Names From Emails"
+echo -e ${green} "[+]" ${white} " Parsing Names From Emails"
 
 # Make CSV
 cat $tmpdir/human-emails | sed -r 's/^([a-zA-Z]+)([\ \-\.\_]*)([a-zA-Z]*)(.+$)/\1,\3,\1\2\3\4/' > $tmpdir/humans.csv
 
 
-echo "[-] Proccessing Naming Convention"
+echo -e ${green} "[+]" ${white} " Proccessing Naming Convention"
 
 case $namingconvention in
     ("firstname.lastname")
@@ -182,7 +187,7 @@ case $namingconvention in
     ("lastname")
         cat $tmpdir/names.cleaned | sed -r 's/(^[a-z]+)[\ ]*([a-z]+)/\1,\2,\2/g' | sed 's/\ //g' | sed "s/$/@$domain/" >> $tmpdir/humans.csv;;
     (*)
-        echo "[X] Something went VERY wrong" ;;
+        echo -e ${red} "[X] Something went VERY wrong" ;;
 esac
 
 # output
@@ -192,4 +197,5 @@ cat $tmpdir/shared-emails | sort | uniq > nothuman.$domain
 
 
 # *molotov*
-echo $tmpdir
+
+echo -e ${green} "[+]" ${white} "Output files saved to" ${red} $tmpdir
